@@ -49,6 +49,10 @@ async def on_member_join(member):
     await member.send(embed=discord.Embed(title="Welcome to The Hangout!", description="Please choose a color using h.set color <id>!\n\n:one: Aqua\n:two: Green\n:three: Blue\n:four: Purple\n:five: Pink\n:six: Yellow\n:seven: Orange\n:eight: Red"))
 
 @bot.event
+async def on_member_remove(member):
+    await bot.get_channel(690644064797851673).send(embed=discord.Embed(title=f"Bye {member.name}!", description="We hope you come back soon!"))
+
+@bot.event
 async def on_reaction_add(reaction, user):
     cursor = conn.cursor()
 
@@ -133,8 +137,11 @@ async def warn(ctx, member:discord.Member, *, reason:str=None):
         warns = cursor.fetchone()[0]
 
         await ctx.send(embed=discord.Embed(description=f"Warned {member} with reason {reason}. They now have {warns} warn(s).\n\nWarn ID: {warn_id}"))
+        await member.send(embed=discord.Embed(title=f"You were warned in The Hangout.", description=f"Warned with reason {reason}. Sorry!"))
 
         if warns >= opt_warns:
+            await member.send(embed=discord.Embed(title=f"You were banned from The Hangout.", description=f"Banned for reaching {warns} warns. Sorry!"))
+
             await member.ban(reason=f"Reached {warns} warns.")
             await ctx.send(embed=discord.Embed(description=f"Banned {member} for reaching {warns} warns."))
     else:
@@ -202,6 +209,8 @@ async def kick(ctx, member:discord.Member, *, reason:str=None):
 async def ban(ctx, member:discord.Member, *, reason:str=None):
     if mod(ctx.author):
         if reason == None: return await ctx.send(embed=discord.Embed(description="Please specify a reason!"))
+
+        await member.send(embed=discord.Embed(title=f"You were banned from The Hangout.", description=f"Banned with reason {reason}. Sorry!"))
 
         await member.ban(reason=reason)
         await ctx.send(embed=discord.Embed(description=f"Banned {member} with reason {reason}."))
