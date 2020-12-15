@@ -126,10 +126,11 @@ async def on_message(message):
 @bot.event
 async def on_member_join(member):
     await bot.get_channel(690644064797851673).send(embed=discord.Embed(title=f"Hey {member.name}!", description="Welcome to the server! Enjoy your stay!"))
-    try: await member.send(embed=discord.Embed(title="Welcome to The Hangout!", description="You will receive the member role in 3 minutes. Please read the rules.\n\nChoose a color using !color <id>!\n\nAqua\nGreen\nBlue\nPurple\nPink\nYellow\nOrange\nRed"))
-    except: pass
+    try: 
+        await member.send(embed=discord.Embed(title="Welcome to The Hangout!", description="You will receive the member role in 3 minutes. Please read the rules.\n\nChoose a color using !color <id>!\n\nAqua\nGreen\nBlue\nPurple\nPink\nYellow\nOrange\nRed"))
+    except discord.HTTPException: 
+        pass
     spam_cache.append({"id": member.id, "last": "", "repeats": 0})
-
     await asyncio.sleep(180)
     await member.add_roles(member.guild.get_role(690644748607815770))
 
@@ -163,10 +164,14 @@ async def on_reaction_add(reaction, user):
 
 @bot.event
 async def on_command_error(ctx, error):
-    if isinstance(error, commands.CommandNotFound): return
-    elif isinstance(error, commands.BadArgument): return await ctx.send(embed=discord.Embed(title="Error!", description="Invalid argument(s)!"))
-    elif isinstance(error, commands.MissingRequiredArgument): return await ctx.send(embed=discord.Embed(title="Error!", description=f"Missing argument!"))
-    else: await ctx.send(embed=discord.Embed(title="Error!", description=f"```{error}```"))
+    if isinstance(error, commands.CommandNotFound): 
+        return
+    elif isinstance(error, commands.BadArgument): 
+        return await ctx.send(embed=discord.Embed(title="Error!", description="Invalid argument(s)!"))
+    elif isinstance(error, commands.MissingRequiredArgument): 
+        return await ctx.send(embed=discord.Embed(title="Error!", description=f"Missing argument `{error.param.name}`!"))
+    else: 
+        return await ctx.send(embed=discord.Embed(title="Error!", description=f"```py{error}```"))
 
 @bot.command(name="color")
 async def _color(ctx, color_choice:str):
@@ -229,15 +234,21 @@ async def warn(ctx, member:discord.Member, *, reason:str):
     warns = cursor.fetchone()[0]
 
     await ctx.send(embed=discord.Embed(description=f"Warned {member} with reason {reason}. They now have {warns} warn(s).\n\nWarn ID: {warn_id}"))
-    try: await member.send(embed=discord.Embed(title=f"You were warned in The Hangout.", description=f"Warned with reason {reason}. Sorry!"))
-    except: pass
+    try:
+        await member.send(embed=discord.Embed(title=f"You were warned in The Hangout.", description=f"Warned with reason {reason}. Sorry!"))
+    except discord.HTTPException: 
+        await ctx.send(f"Was not able to DM {member}")
 
     if warns >= opt_warns:
-        try: await member.send(embed=discord.Embed(title=f"You were banned from The Hangout.", description=f"Banned for reaching {warns} warns. Sorry!"))
-        except: pass
+        try: 
+            await member.ban(reason=f"Reached {warns} warns.")
+            await member.send(embed=discord.Embed(title=f"You were banned from The Hangout.", description=f"Banned for reaching {warns} warns. Sorry!"))
+            await ctx.send(embed=discord.Embed(description=f"Banned {member} for reaching {warns} warns."))
+        except discord.HTTPException: 
+            await ctx.send(f"Couldn\'t ban {member}. Maybe i\'m missing permissions?")
 
-        await member.ban(reason=f"Reached {warns} warns.")
-        await ctx.send(embed=discord.Embed(description=f"Banned {member} for reaching {warns} warns."))    
+
+            
 
 @bot.command()
 @commands.has_role("Staff")
@@ -286,8 +297,11 @@ async def unlock(ctx, channel:discord.TextChannel=None):
 @bot.command()
 @commands.has_role("Staff")
 async def purge(ctx, count:int):
-    await ctx.channel.purge(limit=count)
-    await ctx.send(embed=discord.Embed(description=f"Purged {count} messages."))
+    try:
+        await ctx.channel.purge(limit=count)
+        await ctx.send(embed=discord.Embed(description=f"Purged {count} messages."))
+    except discord.HTTPException as e:
+        await ctx.send(f'Error: {e} (try a smaller search?)')
 
 @bot.command()
 @commands.has_role("Staff")
@@ -309,20 +323,24 @@ async def unmute(ctx, member:discord.Member):
 @bot.command()
 @commands.has_role("Staff")
 async def kick(ctx, member:discord.Member, *, reason:str):
-    try: await member.send(embed=discord.Embed(title=f"You were kicked from The Hangout.", description=f"Kicked with reason {reason}. Sorry!"))
-    except: pass
-
-    await member.kick(reason=reason)
-    await ctx.send(embed=discord.Embed(description=f"Kicked {member} with reason {reason}."))
+    try:
+        await member.kick(reason=reason)
+        await member.send(embed=discord.Embed(title=f"You were kicked from The Hangout.", description=f"Kicked with reason {reason}. Sorry!"))
+        await ctx.send(embed=discord.Embed(description=f"Kicked {member} with reason {reason}."))
+    except discord.HTTPException:
+        await ctx.send(f"Was\'nt able to kick or DM {member}")
 
 @bot.command()
 @commands.has_role("Staff")
 async def ban(ctx, member:discord.Member, *, reason:str):
-    try: await member.send(embed=discord.Embed(title=f"You were banned from The Hangout.", description=f"Banned with reason {reason}. Sorry!"))
-    except: pass
+    try: 
+        await member.ban(reason=reason)
+        await member.send(embed=discord.Embed(title=f"You were banned from The Hangout.", description=f"Banned with reason {reason}. Sorry!"))
+        await ctx.send(embed=discord.Embed(description=f"Banned {member} with reason {reason}."))
+    except discord.HTTPException:
+        await ctx.send(f"Was\'nt able to ban or DM {member}")
 
-    await member.ban(reason=reason)
-    await ctx.send(embed=discord.Embed(description=f"Banned {member} with reason {reason}."))
+
 
 @bot.command(name="xp")
 async def _xp(ctx, member:discord.Member=None):
