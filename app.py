@@ -327,12 +327,17 @@ async def unmute(ctx, member:discord.Member):
 @bot.command()
 @commands.has_role("Staff")
 async def kick(ctx, member:discord.Member, *, reason:str):
-    try:
-        await member.kick(reason=reason)
-        await member.send(embed=discord.Embed(title=f"You were kicked from The Hangout.", description=f"Kicked with reason {reason}. Sorry!"))
-        await ctx.send(embed=discord.Embed(description=f"Kicked {member} with reason {reason}."))
+    msg = f"Kicked {member} with reason {reason}."
+    try: 
+        await member.ban(reason=reason)
     except discord.HTTPException:
-        await ctx.send(f"Was\'nt able to kick or DM {member}")
+        await ctx.send(f"Was\'nt able to kick {member}")
+    finally:
+        try:
+            await member.send(embed=discord.Embed(title=f"You were kicked from The Hangout.", description=f"Kicked with reason {reason}. Sorry!"))
+         except discord.HTTPException:
+           msg = f"Kicked {member} with reason {reason}. Info: Was not able to DM user."
+     await ctx.send(embed=discord.Embed(description=msg)
 
 @bot.command()
 @commands.has_role("Staff")
