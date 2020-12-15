@@ -337,12 +337,17 @@ async def kick(ctx, member:discord.Member, *, reason:str):
 @bot.command()
 @commands.has_role("Staff")
 async def ban(ctx, member:discord.Member, *, reason:str):
+    msg = f"Banned {member} with reason {reason}."
     try: 
         await member.ban(reason=reason)
-        await member.send(embed=discord.Embed(title=f"You were banned from The Hangout.", description=f"Banned with reason {reason}. Sorry!"))
-        await ctx.send(embed=discord.Embed(description=f"Banned {member} with reason {reason}."))
     except discord.HTTPException:
-        await ctx.send(f"Was\'nt able to ban or DM {member}")
+        await ctx.send(f"Was\'nt able to ban {member}")
+    finally:
+        try:
+            await member.send(embed=discord.Embed(title=f"You were banned from The Hangout.", description=f"Banned with reason {reason}. Sorry!"))
+         except discord.HTTPException:
+           msg = f"Banned {member} with reason {reason}. Info: Was not able to DM user."
+     await ctx.send(embed=discord.Embed(description=msg
 
 
 
