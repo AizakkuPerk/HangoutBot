@@ -74,13 +74,13 @@ async def on_message(message):
                 try: 
                     await message.author.send(embed=discord.Embed(title=f"You were warned in The Hangout.", description=f"Warned with reason AntiSpam. Sorry!"))
                 except discord.HTTPException: 
-                    print(f"wasn't able to dm {message.author}")
+                    print(f"wasn\'t able to dm {message.author}")
 
                 if warns >= opt_warns:
                     try: 
                         await message.author.send(embed=discord.Embed(title=f"You were banned from The Hangout.", description=f"Banned for reaching {warns} warns. Sorry!"))
                     except discord.HTTPException: 
-                        print(f"wasn't able to dm {message.author}")
+                        print(f"wasn\'t able to dm {message.author}")
 
                     await message.author.ban(reason=f"Reached {warns} warns.")
                     await message.channel.send(embed=discord.Embed(description=f"Banned {message.author} for reaching {warns} warns."))
