@@ -331,7 +331,7 @@ async def kick(ctx, member:discord.Member, *, reason:str):
     try: 
         await member.ban(reason=reason)
     except discord.HTTPException:
-        await ctx.send(f"Was\'nt able to kick {member}")
+        await ctx.send(f"Wasn\'t able to kick {member}")
     finally:
         try:
             await member.send(embed=discord.Embed(title=f"You were kicked from The Hangout.", description=f"Kicked with reason {reason}. Sorry!"))
@@ -346,7 +346,7 @@ async def ban(ctx, member:discord.Member, *, reason:str):
     try: 
         await member.ban(reason=reason)
     except discord.HTTPException:
-        await ctx.send(f"Was\'nt able to ban {member}")
+        await ctx.send(f"Wasn\'t able to ban {member}")
     finally:
         try:
             await member.send(embed=discord.Embed(title=f"You were banned from The Hangout.", description=f"Banned with reason {reason}. Sorry!"))
