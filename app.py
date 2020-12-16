@@ -246,10 +246,11 @@ async def warn(ctx, member:discord.Member, *, reason:str):
     if warns >= opt_warns:
         try: 
             await member.ban(reason=f"Reached {warns} warns.")
-            await member.send(embed=discord.Embed(title=f"You were banned from The Hangout.", description=f"Banned for reaching {warns} warns. Sorry!"))
-            await ctx.send(embed=discord.Embed(description=f"Banned {member} for reaching {warns} warns."))
         except discord.HTTPException: 
             await ctx.send(f"Couldn\'t ban {member}. Maybe i\'m missing permissions?")
+        finally:
+            await member.send(embed=discord.Embed(title=f"You were banned from The Hangout.", description=f"Banned for reaching {warns} warns. Sorry!"))
+            await ctx.send(embed=discord.Embed(description=f"Banned {member} for reaching {warns} warns."))
 
 
             
@@ -280,7 +281,7 @@ async def warnings(ctx, member:discord.Member=None):
 @bot.command()
 @commands.has_role("Staff")
 async def lock(ctx, channel:discord.TextChannel=None, minutes:int=None):
-    if not channel: channel = ctx.channel
+    channel = channel or ctx.channel
 
     await channel.set_permissions(ctx.guild.default_role, send_messages=False)
     await ctx.send(embed=discord.Embed(description="Locked channel."))
@@ -293,8 +294,8 @@ async def lock(ctx, channel:discord.TextChannel=None, minutes:int=None):
 @bot.command()
 @commands.has_role("Staff")
 async def unlock(ctx, channel:discord.TextChannel=None):
-    if not channel: channel = ctx.channel
-
+    channel = channel or ctx.channel
+    
     await channel.set_permissions(ctx.guild.default_role, overwrite=None)
     await ctx.send(embed=discord.Embed(description="Unlocked channel."))
 
@@ -329,7 +330,7 @@ async def unmute(ctx, member:discord.Member):
 async def kick(ctx, member:discord.Member, *, reason:str):
     msg = f"Kicked {member} with reason {reason}."
     try: 
-        await member.ban(reason=reason)
+        await member.kick(reason=reason)
     except discord.HTTPException:
         await ctx.send(f"Wasn\'t able to kick {member}")
     finally:
